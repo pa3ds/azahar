@@ -559,12 +559,13 @@ GMainWindow::GMainWindow(Core::System& system_)
         secondary_window->setAttribute(Qt::WA_ShowWithoutActivating);
     }
 
-    show();
 #ifdef _WIN32
+    // Before show(), so the window never appears on the desktop the user is on first.
     if (!start_on_desktop.isEmpty()) {
         MoveToVirtualDesktop(reinterpret_cast<HWND>(winId()), start_on_desktop);
     }
 #endif
+    show();
 
     // If the theme is updated before show() it doesn't apply properly, so do it again here.
     // We still need the earlier call to make sure that the icons are set up correctly in the
@@ -1100,7 +1101,12 @@ void GMainWindow::SetDefaultUIGeometry() {
 }
 
 void GMainWindow::RestoreUIState() {
-    restoreGeometry(UISettings::values.geometry);
+    // A main window saved maximized is shown maximized, and Windows activates it whatever it is
+    // asked: every -B boot took the foreground until the saved geometry was left out. Taking the
+    // maximized state off again after restoring it was not enough.
+    if (!start_in_background) {
+        restoreGeometry(UISettings::values.geometry);
+    }
     restoreState(UISettings::values.state);
     render_window->restoreGeometry(UISettings::values.renderwindow_geometry);
     secondary_window->restoreGeometry(UISettings::values.secondarywindow_geometry);
