@@ -15,6 +15,7 @@
 #include "core/hle/kernel/event.h"
 #include "core/hle/kernel/server_session.h"
 #include "core/hle/service/fs/file.h"
+#include "core/hle/service/fs/pa3ds_timing.h"
 
 SERIALIZE_EXPORT_IMPL(Service::FS::File)
 SERIALIZE_EXPORT_IMPL(Service::FS::FileSessionSlot)
@@ -157,7 +158,8 @@ void File::Read(Kernel::HLERequestContext& ctx) {
                               async_data->length, time_took, read_delay);
                 }
                 */
-                return static_cast<s64>((read_delay > time_took) ? (read_delay - time_took) : 0);
+                return Pa3dsTiming::Charge(
+                    'r', static_cast<s64>((read_delay > time_took) ? (read_delay - time_took) : 0));
             } else {
                 return static_cast<s64>(read_delay);
             }

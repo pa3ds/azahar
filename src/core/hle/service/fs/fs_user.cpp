@@ -31,6 +31,7 @@
 #include "core/hle/service/am/am.h"
 #include "core/hle/service/fs/archive.h"
 #include "core/hle/service/fs/fs_user.h"
+#include "core/hle/service/fs/pa3ds_timing.h"
 #include "core/hw/aes/key.h"
 #include "core/hw/unique_data.h"
 
@@ -113,10 +114,11 @@ void FS_USER::OpenFile(Kernel::HLERequestContext& ctx) {
             if (Settings::values.deterministic_async_operations) {
                 time_took = std::chrono::nanoseconds(0);
             }
-            return static_cast<s64>(((async_data->file.second > time_took)
-                                         ? (async_data->file.second - time_took)
-                                         : std::chrono::nanoseconds())
-                                        .count());
+            return Pa3dsTiming::Charge(
+                'o', static_cast<s64>(((async_data->file.second > time_took)
+                                                ? (async_data->file.second - time_took)
+                                                : std::chrono::nanoseconds())
+                                               .count()));
         },
         [async_data](Kernel::HLERequestContext& ctx) {
             IPC::RequestBuilder rb(ctx, 1, 2);
@@ -229,10 +231,11 @@ void FS_USER::OpenFileDirectly(Kernel::HLERequestContext& ctx) {
             if (Settings::values.deterministic_async_operations) {
                 time_took = std::chrono::nanoseconds(0);
             }
-            return static_cast<s64>(((async_data->file.second > time_took)
-                                         ? (async_data->file.second - time_took)
-                                         : std::chrono::nanoseconds())
-                                        .count());
+            return Pa3dsTiming::Charge(
+                'd', static_cast<s64>(((async_data->file.second > time_took)
+                                                ? (async_data->file.second - time_took)
+                                                : std::chrono::nanoseconds())
+                                               .count()));
         },
         [async_data](Kernel::HLERequestContext& ctx) {
             IPC::RequestBuilder rb(ctx, 1, 2);
