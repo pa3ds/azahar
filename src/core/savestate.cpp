@@ -12,6 +12,7 @@
 #include "common/scm_rev.h"
 #include "common/swap.h"
 #include "common/zstd_compression.h"
+#include "audio_core/hle/mixers.h"
 #include "core/core.h"
 #include "core/loader/loader.h"
 #include "core/movie.h"
@@ -208,6 +209,7 @@ void System::LoadState(u32 slot) {
     const auto path = GetSaveStatePath(title_id, movie_id, slot);
 
     std::vector<u8> decompressed;
+    bool without_effects = false;
     {
         std::vector<u8> buffer(FileUtil::GetSize(path) - sizeof(CSTHeader));
 
@@ -227,6 +229,10 @@ void System::LoadState(u32 slot) {
         if (!ValidateSaveState(header, info, title_id, movie_id)) {
             throw std::runtime_error("Invalid savestate");
         }
+        // pa3ds: the 2126 releases, which the movies are recorded on, came before the HLE DSP's
+        // delay and reverb effects were saved in a state, so a state saved while recording one
+        // lacks them ("array size too short"). They hold sound alone.
+        without_effects = info.build_name.starts_with("2126.");
 
         if (file.ReadBytes(buffer.data(), buffer.size()) != buffer.size()) {
             throw std::runtime_error("Could not read from file at " + path);
@@ -239,8 +245,15 @@ void System::LoadState(u32 slot) {
     decompressed.clear();
 
     // Deserialize
-    iarchive ia{sstream};
-    ia&* this;
+    AudioCore::HLE::Mixers::loading_without_effects = without_effects;
+    try {
+        iarchive ia{sstream};
+        ia&* this;
+    } catch (...) {
+        AudioCore::HLE::Mixers::loading_without_effects = false;
+        throw;
+    }
+    AudioCore::HLE::Mixers::loading_without_effects = false;
 }
 
 std::vector<u8> System::SaveStateBuffer() const {

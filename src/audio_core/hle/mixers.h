@@ -20,6 +20,10 @@ public:
 
     void Reset();
 
+    /// pa3ds: set while loading a state saved by a release that kept no delay or reverb effects
+    /// in it (2126.1.1, the recorders' Azahar), which the archive would otherwise misread.
+    static inline bool loading_without_effects = false;
+
     void Sleep();
     void Wakeup();
 
@@ -53,8 +57,13 @@ private:
             ar & intermediate_mixer_volume;
             ar & aux_bus_enable;
             ar & intermediate_mix_buffer;
-            ar & delay_effect;
-            ar & reverb_effect;
+            if (Archive::is_loading::value && loading_without_effects) {
+                delay_effect = {};
+                reverb_effect = {};
+            } else {
+                ar & delay_effect;
+                ar & reverb_effect;
+            }
             ar & output_format;
         }
     };
