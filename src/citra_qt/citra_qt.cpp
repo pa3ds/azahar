@@ -3,6 +3,7 @@
 // Refer to the LICENSE.txt file included.
 
 #include <clocale>
+#include <cstdlib>
 #include <iostream>
 #include <memory>
 #include <optional>
@@ -4341,6 +4342,11 @@ void GMainWindow::OpenPerGameConfiguration(u64 title_id, const QString& file_nam
 }
 
 void GMainWindow::OnMoviePlaybackCompleted() {
+    // A -B replay played to a moment, for pa3ds to touch the game from there with input of its
+    // own (pa3ds spike 257: dragging Pokemon-Amie's puffs), goes on once its movie has ended.
+    if (start_in_background && std::getenv("PA3DS_PLAY_ON") != nullptr) {
+        return;
+    }
     OnPauseGame();
     // Nobody is watching a -B replay, and a message box takes the foreground as it opens.
     if (start_in_background) {
