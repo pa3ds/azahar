@@ -14,7 +14,8 @@
 // file's last charge: the replay is no longer the run the file was taken from.
 //
 // The same file marks the first read of the buttons ("P"), and when the game turns the
-// accelerometer on ("A") and off ("a"), each with a charge of 0 that nothing is charged from.
+// accelerometer on ("A") and off ("a") and the gyroscope on ("G") and off ("g"), each with a
+// charge of 0 that nothing is charged from.
 // Where the accelerometer's readings fall among the buttons' in a movie is the one place a
 // movie says when something happened in the game.
 

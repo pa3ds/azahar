@@ -544,6 +544,7 @@ void Module::Interface::EnableGyroscopeLow(Kernel::HLERequestContext& ctx) {
 
     // Schedules the gyroscope update event if the gyroscope was just enabled
     if (hid->enable_gyroscope_count == 1) {
+        Service::FS::Pa3dsTiming::Mark('G');
         hid->system.CoreTiming().ScheduleEvent(gyroscope_update_ticks, hid->gyroscope_update_event);
     }
 
@@ -574,6 +575,7 @@ void Module::Interface::DisableGyroscopeLow(Kernel::HLERequestContext& ctx) {
 
     // Unschedules the gyroscope update event if the gyroscope was just disabled
     if (hid->enable_gyroscope_count == 0) {
+        Service::FS::Pa3dsTiming::Mark('g');
         hid->system.CoreTiming().UnscheduleEvent(hid->gyroscope_update_event, 0);
     }
 
