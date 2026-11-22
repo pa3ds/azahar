@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <array>
 #include <functional>
 #include <span>
 #include <boost/serialization/vector.hpp>
@@ -142,6 +143,11 @@ public:
 private:
     void CheckInputEnd();
 
+    // pa3ds: the next entry of input kind `kind` in the movie, read from its own place.
+    bool Take(u8 kind, ControllerState& s);
+    // pa3ds: play every kind of input on from byte `at`.
+    void Seek(std::size_t at);
+
     template <typename... Targs>
     void Handle(Targs&... Fargs);
 
@@ -176,6 +182,10 @@ private:
 
     std::vector<u8> recorded_input;
     std::size_t current_byte = 0;
+    // pa3ds: where each kind of input is read on from, by ControllerStateType, and the byte after
+    // the movie's last buttons, where its playback ends.
+    std::array<std::size_t, 6> next_byte{};
+    std::size_t pads_end = 0;
     u64 current_input = 0;
     // Total input count of the current movie being played. Not used for recording.
     u64 total_input = 0;
