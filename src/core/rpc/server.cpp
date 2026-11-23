@@ -2,6 +2,7 @@
 // Licensed under GPLv3 or any later version
 // Refer to the LICENSE.txt file included.
 
+#include "common/settings.h"
 #include "core/core.h"
 #include "core/rpc/packet.h"
 #include "core/rpc/rpc_server.h"
@@ -15,10 +16,12 @@ Server::Server(Core::System& system_) : rpc_server{system_} {
         NewRequestCallback(std::move(new_request));
     };
 
+    const u16 port = Settings::values.rpc_server_port.GetValue();
     try {
         udp_server = std::make_unique<UDPServer>(callback);
+        LOG_INFO(RPC_Server, "Listening on UDP port {}", port);
     } catch (...) {
-        LOG_ERROR(RPC_Server, "Error starting UDP server");
+        LOG_ERROR(RPC_Server, "Error starting UDP server on port {}", port);
     }
 }
 
