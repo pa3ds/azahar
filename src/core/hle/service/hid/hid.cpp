@@ -142,6 +142,18 @@ void Module::LoadInputDevices() {
     }
 }
 
+namespace {
+// pa3ds: what the `pa3ds-input` request file holds now (`SetPa3dsInput`).
+std::atomic<u32> pa3ds_buttons{0};
+std::atomic<u32> pa3ds_circle{0};
+} // namespace
+
+void SetPa3dsInput(u32 buttons, s16 circle_x, s16 circle_y) {
+    pa3ds_buttons = buttons;
+    pa3ds_circle = (static_cast<u32>(static_cast<u16>(circle_x)) << 16) |
+                   static_cast<u16>(circle_y);
+}
+
 void Module::UpdatePadCallback(std::uintptr_t user_data, s64 cycles_late) {
     SharedMem* mem = reinterpret_cast<SharedMem*>(shared_mem->GetPointer());
 
@@ -256,6 +268,13 @@ void Module::UpdatePadCallback(std::uintptr_t user_data, s64 cycles_late) {
         circle_pad_old_x.push_back(circle_pad_new_x);
         circle_pad_old_y.erase(circle_pad_old_y.begin());
         circle_pad_old_y.push_back(circle_pad_new_y);
+
+        // pa3ds: a script's held buttons and circle pad, over the player's own.
+        state.hex |= pa3ds_buttons.load();
+        if (const u32 circle = pa3ds_circle.load(); circle != 0) {
+            circle_pad_x = static_cast<s16>(static_cast<u16>(circle >> 16));
+            circle_pad_y = static_cast<s16>(static_cast<u16>(circle & 0xFFFF));
+        }
 
         system.Movie().HandlePadAndCircleStatus(state, circle_pad_x, circle_pad_y);
 

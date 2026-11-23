@@ -113,6 +113,7 @@
 #include "core/frontend/applets/default_applets.h"
 #include "core/hle/service/am/am.h"
 #include "core/hle/service/fs/archive.h"
+#include "core/hle/service/hid/hid.h"
 #include "core/hle/service/nfc/nfc.h"
 #include "core/loader/loader.h"
 #include "core/movie.h"
@@ -1871,6 +1872,22 @@ void GMainWindow::PollStateRequests() {
         system.SendSignal(signal, slot);
         system.frame_limiter.AdvanceFrame();
     }
+    // pa3ds: `pa3ds-input` holds "<buttons> <circle x> <circle y>", the PadState bits and the
+    // circle pad from -156 to 156, held while the file says so; no file, nothing held.
+    QFile input(user_dir.filePath(QStringLiteral("pa3ds-input")));
+    u32 buttons = 0;
+    s16 circle_x = 0, circle_y = 0;
+    if (input.exists() && input.open(QIODevice::ReadOnly)) {
+        const QStringList parts =
+            QString::fromUtf8(input.readAll()).simplified().split(QLatin1Char(' '));
+        input.close();
+        if (parts.size() == 3) {
+            buttons = parts[0].toUInt(nullptr, 0);
+            circle_x = static_cast<s16>(parts[1].toInt());
+            circle_y = static_cast<s16>(parts[2].toInt());
+        }
+    }
+    Service::HID::SetPa3dsInput(buttons, circle_x, circle_y);
 }
 
 void GMainWindow::ShutdownGame() {

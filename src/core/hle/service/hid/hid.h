@@ -428,6 +428,10 @@ private:
 std::shared_ptr<Module> GetModule(Core::System& system);
 
 void InstallInterfaces(Core::System& system);
+
+/// pa3ds: buttons (the PadState bits) and a circle pad position a script holds through the
+/// `pa3ds-input` request file, merged into the pad at every update until changed. Zero for none.
+void SetPa3dsInput(u32 buttons, s16 circle_x, s16 circle_y);
 } // namespace Service::HID
 
 SERVICE_CONSTRUCT(Service::HID::Module)
