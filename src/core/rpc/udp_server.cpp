@@ -6,6 +6,7 @@
 #include <boost/asio.hpp>
 #include "common/common_types.h"
 #include "common/logging/log.h"
+#include "common/settings.h"
 #include "core/rpc/packet.h"
 #include "core/rpc/udp_server.h"
 
@@ -14,9 +15,9 @@ namespace Core::RPC {
 class UDPServer::Impl {
 public:
     explicit Impl(std::function<void(std::unique_ptr<Packet>)> new_request_callback)
-        // Use a random high port
-        // TODO: Make configurable or increment port number on failure
-        : socket(io_context, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 45987)),
+        : socket(io_context,
+                 boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(),
+                                                Settings::values.rpc_server_port.GetValue())),
           new_request_callback(std::move(new_request_callback)) {
 
         EnsureBufferSize<boost::asio::socket_base::send_buffer_size>(MAX_PACKET_SIZE * 2);

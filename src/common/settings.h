@@ -697,6 +697,8 @@ struct Values {
     Setting<u16> gdbstub_port{24689, Keys::gdbstub_port};
     Setting<bool> instant_debug_log{false, Keys::instant_debug_log};
     Setting<bool> enable_rpc_server{false, Keys::enable_rpc_server};
+    // pa3ds: so a second Azahar on the same machine can serve RPC too.
+    Setting<u16> rpc_server_port{45987, Keys::rpc_server_port};
     Setting<bool> toggle_unique_data_console_type{false, Keys::toggle_unique_data_console_type};
     Setting<bool> enable_exception_handler{false, Keys::enable_exception_handler};
 
